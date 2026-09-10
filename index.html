@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#05080f">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="Hay algo aquí">
+<meta property="og:description" content="Se abre con una palabra.">
+<title>Hay algo aquí</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#05080f;
+    --ink-2:#0a1020;
+    --bone:#f1ece2;
+    --bone-dim:rgba(241,236,226,.62);
+    --bone-faint:rgba(241,236,226,.34);
+    --gold:#e6b567;
+    --gold-soft:rgba(230,181,103,.55);
+    --ice:#bcd4e0;
+    --serif:"Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+    --sans:"Jost", "Avenir Next", "Segoe UI", sans-serif;
+  }
+
+  *{box-sizing:border-box}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--ink);
+    color:var(--bone);
+    font-family:var(--sans);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  /* ---------- atmósfera ---------- */
+  .sky{
+    position:fixed; inset:0; z-index:0;
+    background:
+      radial-gradient(120% 90% at 18% 12%, rgba(46,66,104,.55) 0%, rgba(5,8,15,0) 58%),
+      radial-gradient(90% 80% at 84% 78%, rgba(96,60,44,.34) 0%, rgba(5,8,15,0) 60%),
+      radial-gradient(70% 70% at 50% 50%, rgba(14,22,40,.9) 0%, var(--ink) 72%);
+  }
+  .grain{
+    position:fixed; inset:-50%; z-index:6; pointer-events:none;
+    opacity:.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 7s steps(6) infinite;
+  }
+  @keyframes grain{
+    0%,100%{transform:translate(0,0)} 16%{transform:translate(-3%,2%)}
+    33%{transform:translate(2%,-3%)} 50%{transform:translate(-2%,-2%)}
+    66%{transform:translate(3%,1%)} 83%{transform:translate(1%,3%)}
+  }
+  .vignette{
+    position:fixed; inset:0; z-index:5; pointer-events:none;
+    background:radial-gradient(100% 78% at 50% 46%, rgba(0,0,0,0) 40%, rgba(0,0,0,.72) 100%);
+  }
+
+  /* ---------- pantalla de la palabra ---------- */
+  #gate{
+    position:fixed; inset:0; z-index:20;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:28px 22px;
+    background:radial-gradient(80% 70% at 50% 42%, rgba(12,18,32,.72) 0%, rgba(5,8,15,.96) 70%);
+    backdrop-filter:blur(2px);
+    transition:opacity .9s ease, transform 1.1s cubic-bezier(.2,.7,.2,1);
+  }
+  #gate.away{opacity:0; transform:scale(1.06); pointer-events:none}
+
+  .seed{
+    width:12px; height:12px; border-radius:50%;
+    background:var(--bone);
+    box-shadow:0 0 14px 3px rgba(230,181,103,.7), 0 0 44px 14px rgba(230,181,103,.22);
+    animation:breathe 3.6s ease-in-out infinite;
+    margin-bottom:38px;
+  }
+  @keyframes breathe{
+    0%,100%{transform:scale(1); opacity:.9}
+    50%{transform:scale(1.5); opacity:1}
+  }
+
+  .kicker{
+    font-family:var(--sans); font-size:10px; font-weight:400;
+    letter-spacing:.42em; text-transform:uppercase;
+    color:var(--bone-faint); margin:0 0 18px;
+  }
+  #gate h1{
+    font-family:var(--serif); font-weight:300; font-style:italic;
+    font-size:clamp(38px,10vw,68px); line-height:1;
+    margin:0 0 22px; letter-spacing:-.01em;
+  }
+  #gate .lead{
+    font-family:var(--serif); font-weight:300;
+    font-size:clamp(17px,4.4vw,21px); line-height:1.62;
+    color:var(--bone-dim); max-width:31ch; text-align:center; margin:0 0 40px;
+  }
+
+  .keyform{display:flex; flex-direction:column; align-items:center; gap:18px; width:100%; max-width:330px}
+  .keyfield{position:relative; width:100%}
+  #word{
+    width:100%; background:transparent; border:0;
+    border-bottom:1px solid rgba(241,236,226,.22);
+    color:var(--bone); font-family:var(--serif); font-weight:300;
+    font-size:clamp(24px,7vw,32px); text-align:center;
+    letter-spacing:.32em; text-indent:.32em;
+    padding:10px 0 14px; outline:none;
+    transition:border-color .4s ease;
+  }
+  #word::placeholder{color:rgba(241,236,226,.2); letter-spacing:.2em; text-indent:.2em; font-style:italic}
+  #word:focus{border-bottom-color:var(--gold-soft)}
+  .keyform.wrong{animation:shake .5s cubic-bezier(.36,.07,.19,.97)}
+  .keyform.wrong #word{border-bottom-color:rgba(214,106,86,.8)}
+  @keyframes shake{
+    10%,90%{transform:translateX(-2px)} 20%,80%{transform:translateX(4px)}
+    30%,50%,70%{transform:translateX(-7px)} 40%,60%{transform:translateX(7px)}
+  }
+
+  .btn{
+    font-family:var(--sans); font-size:10px; font-weight:400;
+    letter-spacing:.34em; text-transform:uppercase;
+    color:var(--bone-dim); background:transparent;
+    border:1px solid rgba(241,236,226,.2); border-radius:999px;
+    padding:13px 30px; cursor:pointer;
+    transition:color .35s, border-color .35s, background .35s, letter-spacing .35s;
+  }
+  .btn:hover{color:var(--ink); background:var(--bone); border-color:var(--bone); letter-spacing:.4em}
+
+  .hint{
+    font-family:var(--serif); font-style:italic; font-size:15px;
+    color:var(--gold-soft); min-height:22px; margin:2px 0 0; text-align:center;
+    opacity:0; transition:opacity .6s ease;
+  }
+  .hint.on{opacity:1}
+
+  /* ---------- escena ---------- */
+  #stage{position:fixed; inset:0; z-index:1; opacity:0; transition:opacity 1.6s ease .3s}
+  #stage.on{opacity:1}
+  canvas{display:block; width:100%; height:100%; touch-action:none; cursor:grab}
+  canvas.grab{cursor:grabbing}
+  canvas.point{cursor:pointer}
+
+  .hud{
+    position:fixed; z-index:4; pointer-events:none;
+    font-family:var(--sans); font-size:9.5px; font-weight:400;
+    letter-spacing:.34em; text-transform:uppercase; color:var(--bone-faint);
+  }
+  .hud.tl{top:26px; left:26px}
+  .hud.br{bottom:26px; right:26px}
+  .hud b{color:var(--gold); font-weight:500}
+
+  #nudge{
+    position:fixed; z-index:4; left:50%; bottom:52px; transform:translateX(-50%);
+    font-family:var(--serif); font-style:italic; font-size:17px;
+    color:var(--bone-dim); text-align:center; pointer-events:none;
+    opacity:0; transition:opacity 1.2s ease; padding:0 20px;
+  }
+  #nudge.on{opacity:1}
+
+  /* ---------- tarjeta ---------- */
+  .panel{
+    position:fixed; inset:0; z-index:30;
+    display:flex; align-items:center; justify-content:center;
+    padding:24px 20px;
+    background:rgba(4,7,13,.62); backdrop-filter:blur(9px);
+    opacity:0; transition:opacity .5s ease;
+  }
+  .panel[hidden]{display:none !important}
+  .panel.on{opacity:1}
+
+  .card{
+    position:relative; width:100%; max-width:520px;
+    max-height:84vh; overflow-y:auto;
+    padding:clamp(30px,7vw,52px) clamp(24px,6vw,46px) clamp(26px,6vw,40px);
+    background:linear-gradient(160deg, rgba(20,28,46,.92) 0%, rgba(9,13,24,.94) 100%);
+    border:1px solid rgba(230,181,103,.2);
+    border-radius:3px;
+    box-shadow:0 40px 120px rgba(0,0,0,.7), inset 0 1px 0 rgba(241,236,226,.06);
+    transform:translateY(22px) scale(.985);
+    transition:transform .6s cubic-bezier(.2,.8,.2,1);
+  }
+  .panel.on .card{transform:none}
+  .card::before{
+    content:""; position:absolute; top:0; left:clamp(24px,6vw,46px); right:clamp(24px,6vw,46px);
+    height:1px; background:linear-gradient(90deg, transparent, var(--gold-soft), transparent);
+  }
+
+  .card .idx{
+    display:block; font-family:var(--sans); font-size:9.5px; font-weight:400;
+    letter-spacing:.42em; text-transform:uppercase; color:var(--gold);
+    margin-bottom:16px;
+  }
+  .card h2{
+    font-family:var(--serif); font-weight:400; font-style:italic;
+    font-size:clamp(30px,7.6vw,44px); line-height:1.08;
+    margin:0 0 22px; letter-spacing:-.015em;
+  }
+  .card p{
+    font-family:var(--serif); font-weight:300;
+    font-size:clamp(18px,4.6vw,21px); line-height:1.72;
+    color:rgba(241,236,226,.88); margin:0 0 18px;
+  }
+  .card p:last-of-type{margin-bottom:30px}
+  .card .sign{
+    font-family:var(--serif); font-style:italic; font-size:19px;
+    color:var(--gold); text-align:right; margin-top:26px;
+  }
+  .cardfoot{display:flex; justify-content:center; gap:12px; flex-wrap:wrap}
+
+  /* ---------- final ---------- */
+  #finale .card{max-width:560px; border-color:rgba(230,181,103,.4)}
+
+  @media (max-width:520px){
+    .hud.tl{top:18px; left:18px} .hud.br{bottom:18px; right:18px}
+    #nudge{bottom:44px; font-size:15.5px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .grain{animation:none} .seed{animation:none}
+    *{transition-duration:.01ms !important}
+  }
+</style>
+</head>
+<body>
+
+
+<div class="sky"></div>
+
+<div id="stage">
+  <canvas id="c"></canvas>
+</div>
+
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<div class="hud tl" id="hudTitle" style="opacity:0;transition:opacity 1.4s ease">Constelación</div>
+<div class="hud br" id="hudCount" style="opacity:0;transition:opacity 1.4s ease"><b>0</b> / 8</div>
+<div id="nudge">Toca cada estrella. No hay orden ni apuro.</div>
+
+<!-- pantalla de la palabra -->
+<section id="gate">
+  <div class="seed"></div>
+  <p class="kicker">Para ti</p>
+  <h1>Hay algo aquí</h1>
+  <p class="lead">Esto se abre con una palabra. No la vas a adivinar por casualidad: pídesela a quien te dejó este código.</p>
+
+  <form class="keyform" id="keyform" autocomplete="off">
+    <div class="keyfield">
+      <input id="word" type="text" inputmode="text" autocomplete="off" autocorrect="off"
+             autocapitalize="off" spellcheck="false" placeholder="la palabra" aria-label="La palabra">
+    </div>
+    <button class="btn" type="submit">Abrir</button>
+    <p class="hint" id="hint"></p>
+  </form>
+</section>
+
+<!-- tarjeta de cada estrella -->
+<div class="panel" id="panel" hidden>
+  <article class="card" role="dialog" aria-modal="true">
+    <span class="idx" id="pIdx"></span>
+    <h2 id="pTitle"></h2>
+    <div id="pBody"></div>
+    <div class="cardfoot"><button class="btn" id="pClose">volver al cielo</button></div>
+  </article>
+</div>
+
+<!-- cierre -->
+<div class="panel" id="finale" hidden>
+  <article class="card" role="dialog" aria-modal="true">
+    <span class="idx">La constelación completa</span>
+    <h2>Eso es todo lo que quería decirte</h2>
+    <p>Cada estrella que abriste dibujó esta figura. No estaba ahí antes de que la miraras — que es más o menos lo que me pasó a mí contigo.</p>
+    <p>No armé esto para convencerte de nada. Lo armé porque me hizo bien conocerte y quería decírtelo de una forma que se pareciera a lo que siento: con calma, con cuidado, y dejándote a ti la última palabra.</p>
+    <p>Cuando quieras, hablamos. Y si no quieres, también está bien. Igual me alegro de haberte conocido.</p>
+    <p class="sign">— G.</p>
+    <div class="cardfoot">
+      <button class="btn" id="fClose">quedarme mirando</button>
+    </div>
+  </article>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     1) LA PALABRA CLAVE  ·  cámbiala aquí si quieres otra
+     ============================================================ */
+  var CLAVE = "amor";
+
+  /* ============================================================
+     2) LOS MENSAJES  ·  edita los textos libremente.
+        x,y,z definen la posición de cada estrella en el cielo.
+     ============================================================ */
+  var STARS = [
+    { t:"Gracias, primero que todo", x:-270, y: 120, z:-60, p:[
+      "Antes de cualquier otra cosa: gracias. Conocerte fue una de esas cosas buenas que uno no anda buscando y que llegan igual.",
+      "Me dejó contento. Tranquilo. Con ganas de más conversación."
+    ]},
+    { t:"Lo poco que sé, me gustó", x:-190, y: -10, z: 50, p:[
+      "No sé todo de ti todavía, y me parece bien: recién empezamos.",
+      "Pero lo poco que sé me gustó de verdad. Cómo dices las cosas. Lo que te hace reír. Lo que te importa cuando nadie te está mirando. No es poco: es justo lo que hace que quiera seguir mirando."
+    ]},
+    { t:"Sin apuro", x: -70, y:-110, z:-20, p:[
+      "Esto no viene con reloj.",
+      "No hay una respuesta que tengas que darme hoy, ni mañana, ni el viernes. Prefiero mil veces lo lento y verdadero que lo rápido y forzado."
+    ]},
+    { t:"Tu bienestar va primero", x:  60, y:-170, z: 70, p:[
+      "Si hay algo que me importa más que gustarte, es que estés bien.",
+      "Que duermas tranquila. Que no cargues cosas que no te tocan. Que tengas espacio para lo tuyo.",
+      "Y si en algún momento yo dejo de ser calma y empiezo a ser peso, quiero que me lo digas. En serio. Prefiero saberlo a que te lo aguantes."
+    ]},
+    { t:"La pregunta honesta", x: 185, y: -90, z:-50, p:[
+      "Me he preguntado si soy un buen partido para ti.",
+      "No lo digo por inseguridad ni para que me digas que sí. Lo digo porque creo que esa pregunta la respondes tú, no yo.",
+      "Yo puedo mostrarte quién soy, sin apuro y sin maquillaje. Lo demás lo decides desde tu propio criterio, que es el único que vale acá."
+    ]},
+    { t:"Lo que puedo ofrecer", x: 250, y:  30, z: 40, p:[
+      "Nada espectacular, y lo digo sin falsa modestia: presencia, honestidad, paciencia y ganas reales de conocerte.",
+      "Que puedas decirme cualquier cosa sin medirte. Que si un día no tienes ganas de hablar, eso también esté bien y no haya que explicarlo."
+    ]},
+    { t:"Lo que no quiero", x: 150, y: 150, z:-60, p:[
+      "No quiero que te sientas obligada a nada. Ni a responder rápido, ni a corresponder, ni a ser distinta de como eres.",
+      "Si esto no va por ahí, prefiero que me lo digas y quedarme igual de agradecido. De verdad igual."
+    ]},
+    { t:"Seguir conociéndote", x:  10, y: 215, z: 50, p:[
+      "Eso es todo lo que pido, y lo pido con la mano abierta: seguir conociéndote. Con el ritmo que a ti te acomode.",
+      "Y si en algún punto me dices que hasta aquí, esta constelación no se apaga. Ya existió. Y estuvo buena."
+    ]}
+  ];
+
+  /* ============================================================ */
+
+  var gate    = document.getElementById('gate');
+  var keyform = document.getElementById('keyform');
+  var input   = document.getElementById('word');
+  var hint    = document.getElementById('hint');
+  var stage   = document.getElementById('stage');
+  var canvas  = document.getElementById('c');
+  var ctx     = canvas.getContext('2d');
+  var panel   = document.getElementById('panel');
+  var finale  = document.getElementById('finale');
+  var hudT    = document.getElementById('hudTitle');
+  var hudC    = document.getElementById('hudCount');
+  var nudge   = document.getElementById('nudge');
+
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- gate ---------- */
+  function normalize(s){
+    return String(s || '').toLowerCase().normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+  }
+  var tries = 0;
+  var HINTS = [
+    "",
+    "",
+    "Pista: son cuatro letras.",
+    "Pista: son cuatro letras.",
+    "Pista: es la palabra más simple que existe.",
+    "Pista: es la palabra más simple que existe. Escríbela en minúsculas si quieres."
+  ];
+
+  keyform.addEventListener('submit', function(e){
+    e.preventDefault();
+    if (normalize(input.value) === normalize(CLAVE)) { unlock(); return; }
+    tries++;
+    keyform.classList.remove('wrong');
+    void keyform.offsetWidth;
+    keyform.classList.add('wrong');
+    var h = HINTS[Math.min(tries, HINTS.length - 1)];
+    if (h){ hint.textContent = h; hint.classList.add('on'); }
+    input.select();
+  });
+
+  var unlocked = false;
+  function unlock(){
+    if (unlocked) return;
+    unlocked = true;
+    try { input.blur(); } catch(e){}
+    gate.classList.add('away');
+    setTimeout(function(){ gate.setAttribute('hidden',''); gate.style.display = 'none'; }, 1100);
+    start();
+    setTimeout(function(){
+      stage.classList.add('on');
+      hudT.style.opacity = 1; hudC.style.opacity = 1;
+    }, 320);
+    setTimeout(function(){ nudge.classList.add('on'); }, 2100);
+    setTimeout(function(){ if (opened.size === 0) nudge.classList.remove('on'); }, 11000);
+  }
+
+  /* ---------- canvas ---------- */
+  var W = 0, H = 0, DPR = 1, scale = 1;
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width  = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    var sx = (W / 2 - 46) / 392;
+    var sy = (H / 2 - 86) / 340;
+    scale = Math.max(0.26, Math.min(1.05, Math.min(sx, sy)));
+  }
+  window.addEventListener('resize', resize);
+
+  // polvo estelar
+  var dust = [];
+  (function seedDust(){
+    for (var i = 0; i < 620; i++){
+      var th = Math.random() * Math.PI * 2;
+      var ph = Math.acos(2 * Math.random() - 1);
+      var r  = 420 + Math.random() * 520;
+      dust.push({
+        x: r * Math.sin(ph) * Math.cos(th),
+        y: r * Math.sin(ph) * Math.sin(th) * 0.62,
+        z: r * Math.cos(ph),
+        s: 0.4 + Math.random() * 1.5,
+        tw: Math.random() * Math.PI * 2,
+        tone: Math.random() < 0.16 ? 1 : 0
+      });
+    }
+  })();
+
+  var shoot = null, nextShoot = 4200;
+
+  var opened = new Set();
+  var yaw = 0, pitch = 0, uYaw = 0, uPitch = 0;
+  var hovered = -1;
+  var proj = new Array(STARS.length);
+  var t0 = performance.now();
+
+  function project(px, py, pz){
+    var cy = Math.cos(yaw), sy = Math.sin(yaw);
+    var x1 = px * cy - pz * sy;
+    var z1 = px * sy + pz * cy;
+    var cp = Math.cos(pitch), sp = Math.sin(pitch);
+    var y1 = py * cp - z1 * sp;
+    var z2 = py * sp + z1 * cp;
+    var fov = 900;
+    var d = fov / (fov + z2);
+    return { x: W / 2 + x1 * d * scale, y: H / 2 + y1 * d * scale, d: d, z: z2 };
+  }
+
+  function frame(now){
+    var t = now - t0;
+    if (!reduced){
+      yaw   = uYaw   + Math.sin(t * 0.000115) * 0.22;
+      pitch = uPitch + Math.sin(t * 0.000082) * 0.10;
+    } else { yaw = uYaw; pitch = uPitch; }
+
+    ctx.clearRect(0, 0, W, H);
+
+    // polvo
+    for (var i = 0; i < dust.length; i++){
+      var p = dust[i];
+      var q = project(p.x, p.y, p.z);
+      if (q.d <= 0.05) continue;
+      var tw = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(t * 0.0013 + p.tw));
+      var a = Math.max(0, Math.min(1, (q.d - 0.35) * 1.5)) * tw * 0.85;
+      if (a <= 0.01) continue;
+      ctx.beginPath();
+      ctx.arc(q.x, q.y, p.s * q.d * scale * 1.15, 0, 6.2832);
+      ctx.fillStyle = p.tone
+        ? 'rgba(230,181,103,' + (a * 0.8).toFixed(3) + ')'
+        : 'rgba(214,228,240,' + a.toFixed(3) + ')';
+      ctx.fill();
+    }
+
+    // estrella fugaz
+    nextShoot -= 16;
+    if (!shoot && nextShoot <= 0 && !reduced){
+      shoot = { x: Math.random() * W * 0.6, y: Math.random() * H * 0.4, life: 0,
+                vx: 5 + Math.random() * 4, vy: 1.6 + Math.random() * 1.6 };
+      nextShoot = 9000 + Math.random() * 14000;
+    }
+    if (shoot){
+      shoot.life += 1;
+      shoot.x += shoot.vx; shoot.y += shoot.vy;
+      var la = Math.max(0, 1 - shoot.life / 60);
+      var g = ctx.createLinearGradient(shoot.x, shoot.y, shoot.x - shoot.vx * 16, shoot.y - shoot.vy * 16);
+      g.addColorStop(0, 'rgba(241,236,226,' + (la * 0.9).toFixed(3) + ')');
+      g.addColorStop(1, 'rgba(241,236,226,0)');
+      ctx.strokeStyle = g; ctx.lineWidth = 1.6; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(shoot.x, shoot.y);
+      ctx.lineTo(shoot.x - shoot.vx * 16, shoot.y - shoot.vy * 16); ctx.stroke();
+      if (shoot.life > 60) shoot = null;
+    }
+
+    // proyección de las estrellas nombradas
+    for (var k = 0; k < STARS.length; k++){
+      proj[k] = project(STARS[k].x, STARS[k].y, STARS[k].z);
+    }
+
+    // líneas
+    ctx.lineCap = 'round';
+    for (var j = 0; j < STARS.length - 1; j++){
+      var a1 = proj[j], b1 = proj[j + 1];
+      var both = opened.has(j) && opened.has(j + 1);
+      ctx.beginPath(); ctx.moveTo(a1.x, a1.y); ctx.lineTo(b1.x, b1.y);
+      if (both){
+        var pulse = 0.55 + 0.25 * Math.sin(t * 0.0016 + j);
+        ctx.strokeStyle = 'rgba(230,181,103,' + pulse.toFixed(3) + ')';
+        ctx.lineWidth = 1.15;
+        ctx.shadowColor = 'rgba(230,181,103,.85)'; ctx.shadowBlur = 10 * scale;
+      } else {
+        ctx.strokeStyle = 'rgba(188,212,224,.10)';
+        ctx.lineWidth = 0.7; ctx.shadowBlur = 0;
+      }
+      ctx.stroke(); ctx.shadowBlur = 0;
+    }
+
+    // estrellas
+    for (var m = 0; m < STARS.length; m++){
+      var s = STARS[m], q2 = proj[m];
+      var isOpen = opened.has(m);
+      var isHot  = hovered === m;
+      var beat = 0.5 + 0.5 * Math.sin(t * (isOpen ? 0.0018 : 0.0026) + m * 1.7);
+      var R = (isOpen ? 3.9 : 2.9) * q2.d * scale * (1 + beat * 0.16) * (isHot ? 1.35 : 1);
+      var col = isOpen ? [230,181,103] : [214,230,240];
+
+      var gr = ctx.createRadialGradient(q2.x, q2.y, 0, q2.x, q2.y, R * (isHot ? 12 : 9));
+      gr.addColorStop(0,   'rgba(' + col + ',' + (0.5 + beat * 0.28).toFixed(3) + ')');
+      gr.addColorStop(0.35,'rgba(' + col + ',' + (0.16 + beat * 0.1).toFixed(3) + ')');
+      gr.addColorStop(1,   'rgba(' + col + ',0)');
+      ctx.beginPath(); ctx.arc(q2.x, q2.y, R * (isHot ? 12 : 9), 0, 6.2832);
+      ctx.fillStyle = gr; ctx.fill();
+
+      ctx.beginPath(); ctx.arc(q2.x, q2.y, R, 0, 6.2832);
+      ctx.fillStyle = isOpen ? '#fbe4bb' : '#ffffff'; ctx.fill();
+
+      var ringR = (isOpen ? 17 : 15) * q2.d * scale * (isHot ? 1.18 : 1);
+      ctx.beginPath(); ctx.arc(q2.x, q2.y, ringR, 0, 6.2832);
+      ctx.strokeStyle = isOpen
+        ? 'rgba(230,181,103,' + (0.42 + beat * 0.2).toFixed(3) + ')'
+        : 'rgba(214,230,240,' + (isHot ? 0.44 : 0.19) + ')';
+      ctx.lineWidth = 0.9; ctx.stroke();
+
+      // etiqueta
+      var fs = Math.max(8.5, 10.5 * scale);
+      ctx.font = '400 ' + fs.toFixed(1) + 'px Jost, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      var label = isHot ? s.t.toUpperCase() : ('0' + (m + 1));
+      var la2 = isHot ? 0.95 : (isOpen ? 0.7 : 0.34);
+      ctx.fillStyle = (isOpen || isHot)
+        ? 'rgba(230,181,103,' + la2 + ')'
+        : 'rgba(241,236,226,' + la2 + ')';
+      var tracked = '';
+      for (var ci = 0; ci < label.length; ci++) tracked += label[ci] + (ci < label.length - 1 ? ' ' : '');
+      var half = ctx.measureText(tracked).width / 2 + 10;
+      var lx2 = Math.max(half, Math.min(W - half, q2.x));
+      ctx.fillText(tracked, lx2, q2.y + ringR + 9 * scale);
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- interacción ---------- */
+  function hitTest(mx, my){
+    var best = -1, bd = 1e9;
+    for (var i = 0; i < proj.length; i++){
+      if (!proj[i]) continue;
+      var dx = proj[i].x - mx, dy = proj[i].y - my;
+      var d = Math.sqrt(dx * dx + dy * dy);
+      if (d < bd){ bd = d; best = i; }
+    }
+    var reach = Math.max(30, 46 * scale);
+    return bd <= reach ? best : -1;
+  }
+
+  var dragging = false, moved = 0, lx = 0, ly = 0;
+
+  canvas.addEventListener('pointerdown', function(e){
+    dragging = true; moved = 0; lx = e.clientX; ly = e.clientY;
+    canvas.classList.add('grab');
+    try { canvas.setPointerCapture(e.pointerId); } catch(err){}
+  });
+  canvas.addEventListener('pointermove', function(e){
+    var r = canvas.getBoundingClientRect();
+    var mx = e.clientX - r.left, my = e.clientY - r.top;
+    if (dragging){
+      var dx = e.clientX - lx, dy = e.clientY - ly;
+      moved += Math.abs(dx) + Math.abs(dy);
+      uYaw   = Math.max(-0.40, Math.min(0.40, uYaw + dx * 0.0020));
+      uPitch = Math.max(-0.22, Math.min(0.22, uPitch + dy * 0.0014));
+      lx = e.clientX; ly = e.clientY;
+    } else {
+      hovered = hitTest(mx, my);
+      canvas.classList.toggle('point', hovered >= 0);
+    }
+  });
+  function endDrag(e){
+    if (!dragging) return;
+    dragging = false;
+    canvas.classList.remove('grab');
+    if (moved < 8){
+      var r = canvas.getBoundingClientRect();
+      var idx = hitTest(e.clientX - r.left, e.clientY - r.top);
+      if (idx >= 0) openStar(idx);
+    }
+    hovered = -1;
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', function(){ dragging = false; canvas.classList.remove('grab'); });
+  canvas.addEventListener('pointerleave', function(){ hovered = -1; canvas.classList.remove('point'); });
+
+  /* ---------- tarjetas ---------- */
+  var pIdx = document.getElementById('pIdx');
+  var pTitle = document.getElementById('pTitle');
+  var pBody = document.getElementById('pBody');
+
+  function openStar(i){
+    var s = STARS[i];
+    pIdx.textContent = 'Estrella 0' + (i + 1) + ' de 08';
+    pTitle.textContent = s.t;
+    pBody.innerHTML = '';
+    s.p.forEach(function(par){
+      var el = document.createElement('p');
+      el.textContent = par;
+      pBody.appendChild(el);
+    });
+    show(panel);
+    nudge.classList.remove('on');
+    if (!opened.has(i)){
+      opened.add(i);
+      hudC.innerHTML = '<b>' + opened.size + '</b> / 8';
+    }
+  }
+
+  function show(el){
+    el.hidden = false;
+    requestAnimationFrame(function(){ el.classList.add('on'); });
+  }
+  function hide(el, then){
+    el.classList.remove('on');
+    setTimeout(function(){ el.hidden = true; if (then) then(); }, 480);
+  }
+
+  document.getElementById('pClose').addEventListener('click', function(){
+    hide(panel, function(){
+      if (opened.size === STARS.length && !finaleShown){
+        finaleShown = true;
+        setTimeout(function(){ show(finale); }, 900);
+      }
+    });
+  });
+  panel.addEventListener('click', function(e){ if (e.target === panel) document.getElementById('pClose').click(); });
+
+  var finaleShown = false;
+  document.getElementById('fClose').addEventListener('click', function(){ hide(finale); });
+  finale.addEventListener('click', function(e){ if (e.target === finale) hide(finale); });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Escape') return;
+    if (!panel.hidden) document.getElementById('pClose').click();
+    else if (!finale.hidden) hide(finale);
+  });
+
+  /* ---------- arranque ---------- */
+  function start(){
+    resize();
+    requestAnimationFrame(frame);
+  }
+
+  // la escena queda lista pero invisible hasta desbloquear
+  resize();
+  setTimeout(function(){ try { input.focus(); } catch(e){} }, 700);
+})();
+</script>
+
+</body>
+</html>
