@@ -152,6 +152,7 @@
   }
   .hud.tl{top:26px; left:26px}
   .hud.br{bottom:26px; right:26px}
+  body.hasagain .hud.br{bottom:70px}
   .hud b{color:var(--gold); font-weight:500}
 
   #nudge{
@@ -161,6 +162,43 @@
     opacity:0; transition:opacity 1.2s ease; padding:0 20px;
   }
   #nudge.on{opacity:1}
+
+  /* volver a leer el cierre */
+  #again{
+    position:fixed; z-index:4; left:50%; bottom:26px; transform:translateX(-50%);
+    font-size:9.5px; padding:11px 24px;
+    border-color:rgba(230,181,103,.42); color:var(--gold);
+    opacity:0; transition:opacity .8s ease, color .35s, background .35s, border-color .35s, letter-spacing .35s;
+  }
+  #again.on{opacity:1}
+  #again[hidden]{display:none !important}
+  #again:hover{color:var(--ink); background:var(--gold); border-color:var(--gold)}
+
+  /* música */
+  #sound{
+    position:fixed; z-index:7; top:20px; right:20px;
+    width:38px; height:38px; padding:0; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; letter-spacing:0; color:var(--gold);
+    border:1px solid rgba(230,181,103,.3); background:rgba(8,12,22,.5);
+    backdrop-filter:blur(6px); cursor:pointer;
+    opacity:0; transition:opacity 1.4s ease, color .3s, border-color .3s, background .3s;
+  }
+  #sound.on{opacity:.85}
+  #sound:hover{opacity:1; border-color:var(--gold)}
+  #sound[hidden]{display:none !important}
+  #sound::after{
+    content:""; position:absolute; width:22px; height:1px; background:currentColor;
+    transform:rotate(-45deg); opacity:0; transition:opacity .3s;
+  }
+  #sound.muted{color:var(--bone-faint); border-color:rgba(241,236,226,.2)}
+  #sound.muted::after{opacity:.9}
+
+  .audiohint{
+    font-family:var(--sans); font-size:9.5px; letter-spacing:.26em;
+    text-transform:uppercase; color:var(--bone-faint);
+    margin:6px 0 0; text-align:center;
+  }
 
   /* ---------- tarjeta ---------- */
   .panel{
@@ -175,8 +213,9 @@
 
   .card{
     position:relative; width:100%; max-width:520px;
-    max-height:84vh; overflow-y:auto;
-    padding:clamp(30px,7vw,52px) clamp(24px,6vw,46px) clamp(26px,6vw,40px);
+    max-height:86vh; overflow:hidden;
+    display:flex; flex-direction:column;
+    padding:clamp(30px,7vw,52px) clamp(24px,6vw,46px) clamp(24px,5vw,34px);
     background:linear-gradient(160deg, rgba(20,28,46,.92) 0%, rgba(9,13,24,.94) 100%);
     border:1px solid rgba(230,181,103,.2);
     border-radius:3px;
@@ -205,18 +244,81 @@
     font-size:clamp(18px,4.6vw,21px); line-height:1.72;
     color:rgba(241,236,226,.88); margin:0 0 18px;
   }
-  .card p:last-of-type{margin-bottom:30px}
+  .card p:last-of-type{margin-bottom:6px}
   .card .sign{
     font-family:var(--serif); font-style:italic; font-size:19px;
-    color:var(--gold); text-align:right; margin-top:26px;
+    color:var(--gold); text-align:right; margin:22px 0 4px;
   }
-  .cardfoot{display:flex; justify-content:center; gap:12px; flex-wrap:wrap}
+  .cardscroll{
+    overflow-y:auto; min-height:0; flex:1 1 auto;
+    scrollbar-width:thin; scrollbar-color:rgba(230,181,103,.35) transparent;
+  }
+  .cardscroll::-webkit-scrollbar{width:3px}
+  .cardscroll::-webkit-scrollbar-thumb{background:rgba(230,181,103,.35); border-radius:3px}
+
+  .cardfoot{
+    position:relative; flex:0 0 auto;
+    display:flex; justify-content:center; gap:12px; flex-wrap:wrap;
+    padding-top:20px;
+  }
+  .cardfoot::before{
+    content:""; position:absolute; left:0; right:0; bottom:100%;
+    height:46px; pointer-events:none;
+    opacity:0; transition:opacity .35s ease;
+    background:linear-gradient(to top, rgba(10,15,26,.97) 12%, rgba(10,15,26,0) 100%);
+  }
+  .card.scrollable .cardfoot::before{opacity:1}
+  .card.hero .cardfoot::before{
+    background:linear-gradient(to top, rgba(13,12,18,.97) 12%, rgba(13,12,18,0) 100%);
+  }
 
   /* ---------- final ---------- */
-  #finale .card{max-width:560px; border-color:rgba(230,181,103,.4)}
+  #finale .card{
+    max-width:580px;
+    border-color:rgba(230,181,103,.55);
+    background:linear-gradient(165deg, rgba(30,32,52,.94) 0%, rgba(11,14,26,.96) 100%);
+    box-shadow:0 46px 130px rgba(0,0,0,.8), 0 0 90px rgba(230,181,103,.12),
+               inset 0 1px 0 rgba(241,236,226,.10);
+  }
+  #finale .card::before{height:2px; left:0; right:0}
+
+  .crown{
+    text-align:center; color:var(--gold);
+    font-size:clamp(21px,5.4vw,28px); letter-spacing:.22em;
+    line-height:1; margin:0 0 20px;
+    text-shadow:0 0 20px rgba(230,181,103,.55);
+    animation:twinkle 3.4s ease-in-out infinite;
+  }
+  @keyframes twinkle{
+    0%,100%{opacity:.72; transform:scale(1)}
+    50%{opacity:1; transform:scale(1.06)}
+  }
+
+  #finale .idx{
+    text-align:center; font-size:11px;
+    letter-spacing:clamp(.2em,1.05vw,.5em);
+    text-indent:clamp(.2em,1.05vw,.5em);
+    margin-bottom:14px;
+  }
+  #finale h2{
+    text-align:center; font-style:normal; font-weight:400;
+    font-size:clamp(33px,8.4vw,50px); line-height:1.05;
+    color:var(--gold); margin-bottom:28px;
+  }
+  #finale .card p{font-size:clamp(18px,4.7vw,21.5px)}
+
+  /* la estrella del centro */
+  .card.hero{
+    border-color:rgba(230,181,103,.5);
+    background:linear-gradient(160deg, rgba(38,30,22,.94) 0%, rgba(13,12,18,.95) 100%);
+    box-shadow:0 40px 120px rgba(0,0,0,.75), 0 0 60px rgba(230,181,103,.09), inset 0 1px 0 rgba(241,236,226,.08);
+  }
+  .card.hero h2{color:var(--gold); font-style:normal; font-weight:400}
 
   @media (max-width:520px){
     .hud.tl{top:18px; left:18px} .hud.br{bottom:18px; right:18px}
+    body.hasagain .hud.br{bottom:64px}
+    #sound{top:14px; right:14px}
     #nudge{bottom:44px; font-size:15.5px}
   }
   @media (prefers-reduced-motion:reduce){
@@ -238,15 +340,17 @@
 <div class="grain"></div>
 
 <div class="hud tl" id="hudTitle" style="opacity:0;transition:opacity 1.4s ease">Constelación</div>
-<div class="hud br" id="hudCount" style="opacity:0;transition:opacity 1.4s ease"><b>0</b> / 8</div>
-<div id="nudge">Toca cada estrella. No hay orden ni apuro.</div>
+<div class="hud br" id="hudCount" style="opacity:0;transition:opacity 1.4s ease"><b>0</b> / 9</div>
+<div id="nudge">Toca cada estrella. No hay orden, ni apuro, ni examen después.</div>
+<button class="btn" id="again" type="button" hidden>✦ &nbsp;Volver a leer el cierre</button>
+<button id="sound" type="button" hidden aria-label="Silenciar la música" title="Silenciar la música">♪</button>
 
 <!-- pantalla de la palabra -->
 <section id="gate">
   <div class="seed"></div>
   <p class="kicker">Para ti</p>
   <h1>Hay algo aquí</h1>
-  <p class="lead">Esto se abre con una palabra. No la vas a adivinar por casualidad: pídesela a quien te dejó este código.</p>
+  <p class="lead">Esto se abre con una palabra. No la vas a adivinar por casualidad: pídesela a quien te dejó este código. Sí, es una excusa para que me escribas.</p>
 
   <form class="keyform" id="keyform" autocomplete="off">
     <div class="keyfield">
@@ -255,15 +359,18 @@
     </div>
     <button class="btn" type="submit">Abrir</button>
     <p class="hint" id="hint"></p>
+    <p class="audiohint">Con audífonos se disfruta más ♪</p>
   </form>
 </section>
 
 <!-- tarjeta de cada estrella -->
 <div class="panel" id="panel" hidden>
   <article class="card" role="dialog" aria-modal="true">
-    <span class="idx" id="pIdx"></span>
-    <h2 id="pTitle"></h2>
-    <div id="pBody"></div>
+    <div class="cardscroll">
+      <span class="idx" id="pIdx"></span>
+      <h2 id="pTitle"></h2>
+      <div id="pBody"></div>
+    </div>
     <div class="cardfoot"><button class="btn" id="pClose">volver al cielo</button></div>
   </article>
 </div>
@@ -271,12 +378,16 @@
 <!-- cierre -->
 <div class="panel" id="finale" hidden>
   <article class="card" role="dialog" aria-modal="true">
-    <span class="idx">La constelación completa</span>
-    <h2>Eso es todo lo que quería decirte</h2>
-    <p>Cada estrella que abriste dibujó esta figura. No estaba ahí antes de que la miraras — que es más o menos lo que me pasó a mí contigo.</p>
-    <p>No armé esto para convencerte de nada. Lo armé porque me hizo bien conocerte y quería decírtelo de una forma que se pareciera a lo que siento: con calma, con cuidado, y dejándote a ti la última palabra.</p>
-    <p>Cuando quieras, hablamos. Y si no quieres, también está bien. Igual me alegro de haberte conocido.</p>
-    <p class="sign">— G.</p>
+    <div class="cardscroll">
+        <div class="crown" aria-hidden="true">✦ &nbsp;♡&nbsp; ✦</div>
+      <span class="idx">La constelación completa</span>
+      <h2>Eso era todo, y ya es bastante</h2>
+      <p>Cada estrella que abriste dibujó esta figura. No estaba ahí antes de que la miraras — que es más o menos lo que me pasó a mí contigo.</p>
+      <p>No armé esto para convencerte de nada. Lo armé porque me hizo feliz conocerte y quería decírtelo de una forma que se pareciera a lo que siento: con calma, con cuidado, con algo de humor, y dejándote a ti la última palabra.</p>
+      <p>Si esto camina, me encantaría construir cosas contigo. Si no camina, me quedo igual de agradecido y te deseo una vida preciosa, con o sin mí en ella. Lo valioso ya pasó: fue bueno, y lo vamos a recordar bien.</p>
+      <p>Mientras tanto, cuando quieras, hablamos. Y si no quieres, también está bien. La estrella queda encendida igual.</p>
+      <p class="sign">— gblanco</p>
+    </div>
     <div class="cardfoot">
       <button class="btn" id="fClose">quedarme mirando</button>
     </div>
@@ -298,39 +409,55 @@
      ============================================================ */
   var STARS = [
     { t:"Gracias, primero que todo", x:-270, y: 120, z:-60, p:[
-      "Antes de cualquier otra cosa: gracias. Conocerte fue una de esas cosas buenas que uno no anda buscando y que llegan igual.",
-      "Me dejó contento. Tranquilo. Con ganas de más conversación."
+      "Antes que cualquier otra cosa: gracias. Conocerte fue una de esas cosas buenas que uno no anda buscando y que llegan igual, sin avisar y sin pedir permiso.",
+      "Y lo contento no se me pasó al día siguiente. Llevo días así. Todavía estoy así.",
+      "Cada vez que aparece un mensaje tuyo, o tu llamada, me pillo sonriéndole a la pantalla como si nadie me viera. Sí me ven. Me da exactamente lo mismo."
     ]},
-    { t:"Lo poco que sé, me gustó", x:-190, y: -10, z: 50, p:[
-      "No sé todo de ti todavía, y me parece bien: recién empezamos.",
-      "Pero lo poco que sé me gustó de verdad. Cómo dices las cosas. Lo que te hace reír. Lo que te importa cuando nadie te está mirando. No es poco: es justo lo que hace que quiera seguir mirando."
+    { t:"Lo que he visto de ti", x:-190, y: -10, z: 50, p:[
+      "No sé todo de ti todavía, y me parece perfecto: si ya supiera todo, no me quedaría excusa para seguir preguntando.",
+      "Pero lo que llevo visto me gustó, y mucho. Tienes una forma de hablar que no anda con rodeos y una risa que se te escapa antes de que alcances a controlarla. Tu espontaneidad es un lujo: dices las cosas como te salen, y eso se agradece.",
+      "Y tienes algo que no se puede fingir ni ensayar: ánimo. Llegas con energía y se contagia. Uno conversa contigo y sale de mejor humor del que entró, y eso no lo logra cualquiera."
     ]},
-    { t:"Sin apuro", x: -70, y:-110, z:-20, p:[
-      "Esto no viene con reloj.",
-      "No hay una respuesta que tengas que darme hoy, ni mañana, ni el viernes. Prefiero mil veces lo lento y verdadero que lo rápido y forzado."
+    { t:"Sin apuro y sin reloj", x: -70, y:-110, z:-20, p:[
+      "Esto no viene con cronómetro ni con fecha de vencimiento.",
+      "No hay nada que tengas que resolver hoy, ni mañana, ni el viernes a las seis en punto. Prefiero mil veces lo lento y verdadero que lo rápido y forzado.",
+      "Tómate todo el tiempo que necesites para decidir qué quieres y qué camino tomar. Para lo que vale la pena tengo la paciencia del mundo entero."
     ]},
     { t:"Tu bienestar va primero", x:  60, y:-170, z: 70, p:[
-      "Si hay algo que me importa más que gustarte, es que estés bien.",
-      "Que duermas tranquila. Que no cargues cosas que no te tocan. Que tengas espacio para lo tuyo.",
-      "Y si en algún momento yo dejo de ser calma y empiezo a ser peso, quiero que me lo digas. En serio. Prefiero saberlo a que te lo aguantes."
+      "Si hay algo que me importa más que cualquier otra cosa, es que estés bien. Así de simple, y sin letra chica.",
+      "Que duermas tranquila. Que no cargues cosas que no te tocan. Que tengas espacio para lo tuyo, para tu gente, para tus silencios.",
+      "Tú te pasas el día haciéndote cargo de otros. Alguien tiene que preguntarte a ti cómo estás, y me gustaría que ese alguien fuera yo.",
+      "Y si en algún momento dejo de ser calma y empiezo a ser peso, quiero que me lo digas sin rodeos. Prefiero mil veces eso a que te lo aguantes por educación."
     ]},
-    { t:"La pregunta honesta", x: 185, y: -90, z:-50, p:[
-      "Me he preguntado si soy un buen partido para ti.",
-      "No lo digo por inseguridad ni para que me digas que sí. Lo digo porque creo que esa pregunta la respondes tú, no yo.",
-      "Yo puedo mostrarte quién soy, sin apuro y sin maquillaje. Lo demás lo decides desde tu propio criterio, que es el único que vale acá."
+    { t:"Aquí nadie es mal partido", x: 185, y: -90, z:-50, p:[
+      "Al principio escribí esta estrella preguntándome si yo sería un buen partido para ti. Después me di cuenta de que la pregunta estaba mal hecha.",
+      "Mira esta constelación: ninguna estrella es mejor que otra. Cada una está donde le corresponde, brillando con lo suyo, y el dibujo completo solo existe porque están todas.",
+      "Contigo es igual. Tú no tienes que demostrarme nada y yo tampoco a ti. Nadie está por debajo ni tiene que alcanzar al otro. Somos dos personas completas que se cayeron bien, y eso ya es bastante raro y bastante bonito.",
+      "Así que no se trata de quién merece a quién. Se trata de si queremos, y de si nos hace bien."
     ]},
-    { t:"Lo que puedo ofrecer", x: 250, y:  30, z: 40, p:[
-      "Nada espectacular, y lo digo sin falsa modestia: presencia, honestidad, paciencia y ganas reales de conocerte.",
-      "Que puedas decirme cualquier cosa sin medirte. Que si un día no tienes ganas de hablar, eso también esté bien y no haya que explicarlo."
+    { t:"Lo que me gustaría construir", x: 250, y:  30, z: 40, p:[
+      "Me da un poco de vergüenza decir esto tan temprano. Igual lo digo.",
+      "Si esto llegara a funcionar, no me imagino algo tibio. Me imagino proyectos, metas, planes que se arman de a dos: cosas que ninguno de los dos haría solo y que juntos salen mejores.",
+      "Viajes mal planificados. Objetivos anotados en un papel del que después nos vamos a reír. Una vida construida a propósito y no por inercia.",
+      "Pero eso es el techo, no el piso. El piso es simplemente pasarla bien contigo."
     ]},
-    { t:"Lo que no quiero", x: 150, y: 150, z:-60, p:[
-      "No quiero que te sientas obligada a nada. Ni a responder rápido, ni a corresponder, ni a ser distinta de como eres.",
-      "Si esto no va por ahí, prefiero que me lo digas y quedarme igual de agradecido. De verdad igual."
+    { t:"Y si no llegara a funcionar", x: 150, y: 150, z:-60, p:[
+      "También pensé en esto, porque me parece honesto pensarlo.",
+      "Si en algún momento esto no resulta, no quiero que terminemos mal ni con un mal sabor guardado. Lo único que de verdad no se recupera es el tiempo, y el que hemos pasado hasta ahora ya valió la pena por sí solo.",
+      "Ojalá, pase lo que pase, sigamos cada uno por su camino y nos vaya bonito. Que te vaya bien de verdad, con o sin mí en la historia.",
+      "Y que cuando te acuerdes de esto, te acuerdes con cariño y con una sonrisa, no con un suspiro. Para mí eso también sería un final feliz."
     ]},
     { t:"Seguir conociéndote", x:  10, y: 215, z: 50, p:[
-      "Eso es todo lo que pido, y lo pido con la mano abierta: seguir conociéndote. Con el ritmo que a ti te acomode.",
-      "Y si en algún punto me dices que hasta aquí, esta constelación no se apaga. Ya existió. Y estuvo buena."
-    ]}
+      "Eso es todo lo que pido, y lo pido con la mano abierta: seguir conociéndote. Al ritmo que a ti te acomode.",
+      "Sin presión, sin apuro y sin examen sorpresa al final.",
+      "Y si algún día me dices que hasta aquí, esta constelación no se apaga. Ya existió. Y estuvo buena."
+    ]},
+    { t:"Fabiola López", x:  20, y:  10, z:  0, hero:true, p:[
+      "Fabiola López. Hermosa — y de las que también lo son por dentro, que es la parte difícil.",
+      "Doctora, y de las buenas: de las que se preocupan de la persona y no solamente del caso.",
+      "Eres la estrella más linda de esta constelación, y no lo digo por decir. Es la única que puse justo en el centro.",
+      "Jamás dejes de brillar. Ni por mí ni por nadie: brilla porque es lo tuyo."
+    ], sign:"Con mucho cariño, gblanco." }
   ];
 
   /* ============================================================ */
@@ -349,6 +476,108 @@
   var nudge   = document.getElementById('nudge');
 
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var again   = document.getElementById('again');
+  var soundBtn = document.getElementById('sound');
+
+  /* ============================================================
+     MÚSICA  ·  pieza original generada por el navegador.
+     Cambia VOLUMEN (0 a 0.3) si la quieres más fuerte o más suave.
+     ============================================================ */
+  var VOLUMEN = 0.13;
+
+  var actx = null, master = null, busDry = null, busWet = null;
+  var chordTimer = null, plucKTimer = null, ci = 0, mi = 0, muted = false;
+
+  var CHORDS = [
+    [110.00, 164.81, 220.00, 261.63],
+    [ 87.31, 130.81, 174.61, 220.00],
+    [130.81, 196.00, 261.63, 329.63],
+    [ 98.00, 146.83, 196.00, 246.94]
+  ];
+  var MELODIA = [659.25, 523.25, 440.00, 523.25, 659.25, 783.99, 659.25, 523.25];
+
+  function initAudio(){
+    if (actx) return;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    try {
+      actx = new AC();
+      master = actx.createGain();
+      master.gain.setValueAtTime(0.0001, actx.currentTime);
+
+      var lp = actx.createBiquadFilter();
+      lp.type = 'lowpass'; lp.frequency.value = 1700; lp.Q.value = 0.4;
+
+      var delay = actx.createDelay(5);
+      delay.delayTime.value = 0.66;
+      var fb = actx.createGain(); fb.gain.value = 0.44;
+      var wetOut = actx.createGain(); wetOut.gain.value = 0.55;
+
+      busDry = actx.createGain(); busDry.gain.value = 1;
+      busWet = actx.createGain(); busWet.gain.value = 0.5;
+
+      busWet.connect(delay);
+      delay.connect(fb); fb.connect(delay);
+      delay.connect(wetOut); wetOut.connect(lp);
+      busDry.connect(lp);
+      lp.connect(master);
+      master.connect(actx.destination);
+
+      master.gain.exponentialRampToValueAtTime(VOLUMEN, actx.currentTime + 7);
+
+      acorde(actx.currentTime + 0.1);
+      chordTimer = setInterval(function(){ acorde(actx.currentTime + 0.05); }, 7000);
+      plucKTimer = setInterval(function(){ nota(actx.currentTime + 0.05); }, 2400);
+
+      soundBtn.hidden = false;
+      setTimeout(function(){ soundBtn.classList.add('on'); }, 900);
+    } catch(e){ actx = null; }
+  }
+
+  function acorde(t0){
+    if (!actx) return;
+    var freqs = CHORDS[ci++ % CHORDS.length], dur = 9;
+    for (var k = 0; k < freqs.length; k++){
+      for (var ti = 0; ti < 2; ti++){
+        var o = actx.createOscillator();
+        o.type = ti ? 'triangle' : 'sine';
+        o.frequency.value = freqs[k] * (ti ? 1.004 : 1);
+        var g = actx.createGain();
+        var peak = (ti ? 0.030 : 0.055) / (1 + k * 0.4);
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(peak, t0 + 3.4);
+        g.gain.setValueAtTime(peak, t0 + dur - 3.4);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        o.connect(g); g.connect(busDry); g.connect(busWet);
+        o.start(t0); o.stop(t0 + dur + 0.2);
+      }
+    }
+  }
+
+  function nota(t0){
+    if (!actx) return;
+    var f = MELODIA[mi++ % MELODIA.length];
+    var o = actx.createOscillator();
+    o.type = 'triangle';
+    o.frequency.value = f;
+    var g = actx.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.042, t0 + 0.09);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.6);
+    o.connect(g); g.connect(busDry); g.connect(busWet);
+    o.start(t0); o.stop(t0 + 2.7);
+  }
+
+  soundBtn.addEventListener('click', function(){
+    if (!actx || !master) return;
+    muted = !muted;
+    soundBtn.classList.toggle('muted', muted);
+    soundBtn.setAttribute('aria-label', muted ? 'Activar la música' : 'Silenciar la música');
+    soundBtn.title = muted ? 'Activar la música' : 'Silenciar la música';
+    master.gain.cancelScheduledValues(actx.currentTime);
+    master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), actx.currentTime);
+    master.gain.exponentialRampToValueAtTime(muted ? 0.0001 : VOLUMEN, actx.currentTime + 1.1);
+  });
 
   /* ---------- gate ---------- */
   function normalize(s){
@@ -359,10 +588,10 @@
   var HINTS = [
     "",
     "",
-    "Pista: son cuatro letras.",
-    "Pista: son cuatro letras.",
-    "Pista: es la palabra más simple que existe.",
-    "Pista: es la palabra más simple que existe. Escríbela en minúsculas si quieres."
+    "Pista: son seis letras.",
+    "Pista: son seis letras y empieza con c.",
+    "Pista: es lo que hay detrás de todo esto. Seis letras, con c.",
+    "Ya, en serio: escríbeme y te la digo. Ese era el plan desde el principio."
   ];
 
   keyform.addEventListener('submit', function(e){
@@ -382,6 +611,7 @@
     if (unlocked) return;
     unlocked = true;
     try { input.blur(); } catch(e){}
+    initAudio();
     gate.classList.add('away');
     setTimeout(function(){ gate.setAttribute('hidden',''); gate.style.display = 'none'; }, 1100);
     start();
@@ -519,8 +749,9 @@
       var isOpen = opened.has(m);
       var isHot  = hovered === m;
       var beat = 0.5 + 0.5 * Math.sin(t * (isOpen ? 0.0018 : 0.0026) + m * 1.7);
-      var R = (isOpen ? 3.9 : 2.9) * q2.d * scale * (1 + beat * 0.16) * (isHot ? 1.35 : 1);
-      var col = isOpen ? [230,181,103] : [214,230,240];
+      var big = s.hero ? 1.55 : 1;
+      var R = (isOpen ? 3.9 : 2.9) * big * q2.d * scale * (1 + beat * 0.16) * (isHot ? 1.35 : 1);
+      var col = isOpen ? [230,181,103] : (s.hero ? [252,228,190] : [214,230,240]);
 
       var gr = ctx.createRadialGradient(q2.x, q2.y, 0, q2.x, q2.y, R * (isHot ? 12 : 9));
       gr.addColorStop(0,   'rgba(' + col + ',' + (0.5 + beat * 0.28).toFixed(3) + ')');
@@ -532,18 +763,19 @@
       ctx.beginPath(); ctx.arc(q2.x, q2.y, R, 0, 6.2832);
       ctx.fillStyle = isOpen ? '#fbe4bb' : '#ffffff'; ctx.fill();
 
-      var ringR = (isOpen ? 17 : 15) * q2.d * scale * (isHot ? 1.18 : 1);
+      var ringR = (isOpen ? 17 : 15) * (s.hero ? 1.4 : 1) * q2.d * scale * (isHot ? 1.18 : 1);
       ctx.beginPath(); ctx.arc(q2.x, q2.y, ringR, 0, 6.2832);
       ctx.strokeStyle = isOpen
         ? 'rgba(230,181,103,' + (0.42 + beat * 0.2).toFixed(3) + ')'
-        : 'rgba(214,230,240,' + (isHot ? 0.44 : 0.19) + ')';
+        : (s.hero ? 'rgba(252,228,190,' + (isHot ? 0.55 : 0.34) + ')'
+                  : 'rgba(214,230,240,' + (isHot ? 0.44 : 0.19) + ')');
       ctx.lineWidth = 0.9; ctx.stroke();
 
       // etiqueta
       var fs = Math.max(8.5, 10.5 * scale);
       ctx.font = '400 ' + fs.toFixed(1) + 'px Jost, sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      var label = isHot ? s.t.toUpperCase() : ('0' + (m + 1));
+      var label = isHot ? s.t.toUpperCase() : (m + 1 < 10 ? '0' + (m + 1) : String(m + 1));
       var la2 = isHot ? 0.95 : (isOpen ? 0.7 : 0.34);
       ctx.fillStyle = (isOpen || isHot)
         ? 'rgba(230,181,103,' + la2 + ')'
@@ -612,28 +844,55 @@
   var pTitle = document.getElementById('pTitle');
   var pBody = document.getElementById('pBody');
 
+  var pCard = panel.querySelector('.card');
+
   function openStar(i){
     var s = STARS[i];
-    pIdx.textContent = 'Estrella 0' + (i + 1) + ' de 08';
+    pIdx.textContent = s.hero ? 'La estrella del centro' : ('Estrella 0' + (i + 1) + ' de 09');
     pTitle.textContent = s.t;
+    pCard.classList.toggle('hero', !!s.hero);
     pBody.innerHTML = '';
     s.p.forEach(function(par){
       var el = document.createElement('p');
       el.textContent = par;
       pBody.appendChild(el);
     });
+    if (s.sign){
+      var sg = document.createElement('p');
+      sg.className = 'sign';
+      sg.textContent = s.sign;
+      pBody.appendChild(sg);
+    }
     show(panel);
     nudge.classList.remove('on');
     if (!opened.has(i)){
       opened.add(i);
-      hudC.innerHTML = '<b>' + opened.size + '</b> / 8';
+      hudC.innerHTML = '<b>' + opened.size + '</b> / 9';
     }
+  }
+
+  function refreshFade(root){
+    var card = root.querySelector('.card');
+    var sc = root.querySelector('.cardscroll');
+    if (!card || !sc) return;
+    card.classList.toggle('scrollable', sc.scrollHeight - sc.clientHeight > 6);
   }
 
   function show(el){
     el.hidden = false;
-    requestAnimationFrame(function(){ el.classList.add('on'); });
+    var sc = el.querySelector('.cardscroll');
+    if (sc) sc.scrollTop = 0;
+    requestAnimationFrame(function(){
+      el.classList.add('on');
+      refreshFade(el);
+      setTimeout(function(){ refreshFade(el); }, 260);
+    });
   }
+
+  window.addEventListener('resize', function(){
+    if (!panel.hidden) refreshFade(panel);
+    if (!finale.hidden) refreshFade(finale);
+  });
   function hide(el, then){
     el.classList.remove('on');
     setTimeout(function(){ el.hidden = true; if (then) then(); }, 480);
@@ -643,13 +902,19 @@
     hide(panel, function(){
       if (opened.size === STARS.length && !finaleShown){
         finaleShown = true;
-        setTimeout(function(){ show(finale); }, 900);
+        setTimeout(function(){ show(finale); }, 1500);
+        setTimeout(function(){
+          again.hidden = false;
+          document.body.classList.add('hasagain');
+          requestAnimationFrame(function(){ again.classList.add('on'); });
+        }, 1500);
       }
     });
   });
   panel.addEventListener('click', function(e){ if (e.target === panel) document.getElementById('pClose').click(); });
 
   var finaleShown = false;
+  again.addEventListener('click', function(){ if (finale.hidden) show(finale); });
   document.getElementById('fClose').addEventListener('click', function(){ hide(finale); });
   finale.addEventListener('click', function(e){ if (e.target === finale) hide(finale); });
 
